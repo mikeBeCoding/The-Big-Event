@@ -38,7 +38,7 @@ export default function EventTable() {
               {[
                 { color: 'bg-blue-100', title: 'Mobile' },
                 { color: 'bg-orange-100', title: 'Support' },
-                { color: 'bg-green-100', title: 'Members' },
+                { color: 'bg-green-100', title: 'Member Perks' },
                 { color: 'bg-red-100', title: 'Plans' },
               ].map((flyer, i) => (
                 <div

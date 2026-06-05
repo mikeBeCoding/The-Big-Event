@@ -222,7 +222,7 @@ function randomInt(min, max) {
 
 function generateResident() {
   const base = randomChoice(basePersonas)
-  const householdSize = randomInt(1, 6)
+  const householdSize = randomInt(1, 4)
   const deviceCount = randomInt(2, Math.max(3, householdSize * 2))
   const budget = randomChoice(budgetLevels)
   const usage = randomChoice(streamingHabits)

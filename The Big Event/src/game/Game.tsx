@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchResident as fetchResidentApi, evaluateConversation } from './api'
-import Scene from './Scene'
+import Scene, { type SceneVariant } from './Scene'
 import EventTable from './EventTable'
 import ResidentCharacter from './ResidentCharacter'
 import EnhancedChatPanel from './EnhancedChatPanel'
@@ -14,6 +14,7 @@ export default function Game() {
   const [isWalking, setIsWalking] = useState(false)
   const [isConversing, setIsConversing] = useState(false)
   const [result, setResult] = useState<EvaluationResult | null>(null)
+  const [sceneVariant, setSceneVariant] = useState<SceneVariant>('outdoor')
 
   async function loadResident() {
     setLoading(true)
@@ -60,7 +61,7 @@ export default function Game() {
       {/* Main scene area */}
       <div className="flex-1 min-h-0 relative bg-blue-300">
         {/* Animated background */}
-        <Scene />
+        <Scene variant={sceneVariant} />
 
         {/* Resident character with walk-in animation */}
         {resident && (
@@ -98,13 +99,22 @@ export default function Game() {
 
       {/* Floating menu button (top-left) */}
       {!loading && !result && (
-        <div className="absolute top-4 left-4 z-40">
+        <div className="absolute top-4 left-4 z-40 flex gap-2">
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors border border-gray-600"
             title="Restart game"
           >
             ⟲ Restart
+          </button>
+          <button
+            onClick={() =>
+              setSceneVariant((v) => (v === 'outdoor' ? 'indoor' : 'outdoor'))
+            }
+            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors border border-gray-600"
+            title="Toggle event setting"
+          >
+            {sceneVariant === 'outdoor' ? '🏡 Courtyard' : '🛋️ Common Room'}
           </button>
         </div>
       )}
