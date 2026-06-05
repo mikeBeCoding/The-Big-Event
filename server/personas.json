@@ -1,0 +1,17 @@
+[
+  {"name":"Sarah","age":42,"mood":"Frustrated","problem":"Internet drops during Zoom meetings","intro":"I'm tired of dealing with my internet cutting out during work calls."},
+  {"name":"Miguel","age":29,"mood":"Concerned","problem":"High latency while gaming","intro":"My games lag and I keep getting disconnected."},
+  {"name":"Diane","age":67,"mood":"Curious","problem":"Wants simple setup and clear pricing","intro":"I just want something that works, and I don't want surprises on my bill."},
+  {"name":"Jamal","age":34,"mood":"Stressed","problem":"Needs reliability for remote work","intro":"I have back-to-back video meetings and can't risk dropouts."},
+  {"name":"Aisha","age":25,"mood":"Budget-conscious","problem":"Searching for affordable bundle","intro":"I'm on a tight budget and want the best value for streaming and school."},
+  {"name":"Carlos","age":45,"mood":"Skeptical","problem":"Satisfied with competitor but curious","intro":"I've had another provider for years. Why should I switch?"},
+  {"name":"Linda","age":58,"mood":"Organized","problem":"HOA concerns about coverage","intro":"Our complex has patchy service in some units. How can that be resolved?"},
+  {"name":"Tina","age":31,"mood":"Busy Parent","problem":"Many devices and parental controls","intro":"We have so many devices — how do I keep the kids safe online?"},
+  {"name":"Ethan","age":22,"mood":"Ambitious","problem":"Streamer needs high upload","intro":"I'm building an audience — I need consistent upload and low-latency."},
+  {"name":"Susan","age":72,"mood":"Apprehensive","problem":"Tech skepticism and accessibility needs","intro":"I find new tech confusing and sometimes need assistive features."},
+  {"name":"Olivia","age":28,"mood":"Excited","problem":"New resident doesn't know options","intro":"I just moved here — what plans are available in my area?"},
+  {"name":"Ben","age":38,"mood":"Practical","problem":"Small business mixed needs","intro":"I run a home business and need uptime and a decent upload speed."},
+  {"name":"Ravi","age":26,"mood":"Student","problem":"Needs reliable upload for projects","intro":"I upload large project files and join remote labs."},
+  {"name":"Karen","age":50,"mood":"Community-minded","problem":"Looking for event partnerships","intro":"We organize neighborhood events and wonder about sponsorships."},
+  {"name":"Liam","age":35,"mood":"Overwhelmed","problem":"Mover needing transfer","intro":"I'm moving next week and need my service transferred quickly."}
+]

@@ -1,0 +1,246 @@
+const basePersonas = [
+  {
+    name: 'Sarah',
+    age: 42,
+    mood: 'Frustrated',
+    category: 'Remote Worker',
+    problem: 'Internet drops during Zoom meetings',
+    intro: "I'm tired of dealing with my internet cutting out during work calls.",
+    focus: 'Reliability',
+    existingProvider: 'Comcast',
+  },
+  {
+    name: 'Miguel',
+    age: 29,
+    mood: 'Concerned',
+    category: 'Gamer',
+    problem: 'High latency while gaming',
+    intro: "My games lag and I keep getting disconnected.",
+    focus: 'Low latency',
+    existingProvider: 'Competitor',
+  },
+  {
+    name: 'Diane',
+    age: 67,
+    mood: 'Curious',
+    category: 'Retiree',
+    problem: 'Wants simple setup and clear pricing',
+    intro: "I just want something that works, and I don't want surprises on my bill.",
+    focus: 'Simplicity',
+    existingProvider: 'No current service',
+  },
+  {
+    name: 'Jamal',
+    age: 34,
+    mood: 'Stressed',
+    category: 'Remote Worker',
+    problem: 'Needs reliability for remote work',
+    intro: "I have back-to-back video meetings and can't risk dropouts.",
+    focus: 'Reliability',
+    existingProvider: 'Comcast',
+  },
+  {
+    name: 'Aisha',
+    age: 25,
+    mood: 'Budget-conscious',
+    category: 'Student',
+    problem: 'Searching for affordable bundle',
+    intro: "I'm on a tight budget and want the best value for streaming and school.",
+    focus: 'Cost',
+    existingProvider: 'Competitor',
+  },
+  {
+    name: 'Carlos',
+    age: 45,
+    mood: 'Skeptical',
+    category: 'Competitor Customer',
+    problem: 'Satisfied with another provider but curious',
+    intro: "I've had another provider for years. Why should I switch?",
+    focus: 'Value',
+    existingProvider: 'Competitor',
+  },
+  {
+    name: 'Linda',
+    age: 58,
+    mood: 'Organized',
+    category: 'HOA Board Member',
+    problem: 'HOA concerns about coverage',
+    intro: "Our complex has patchy service in some units. How can that be resolved?",
+    focus: 'Community coverage',
+    existingProvider: 'Multiple providers',
+  },
+  {
+    name: 'Tina',
+    age: 31,
+    mood: 'Busy Parent',
+    category: 'Parent',
+    problem: 'Many devices and parental controls',
+    intro: "We have so many devices — how do I keep the kids safe online?",
+    focus: 'Family safety',
+    existingProvider: 'Comcast',
+  },
+  {
+    name: 'Ethan',
+    age: 22,
+    mood: 'Ambitious',
+    category: 'Streamer',
+    problem: 'Streamer needs high upload',
+    intro: "I'm building an audience — I need consistent upload and low-latency.",
+    focus: 'Upload speed',
+    existingProvider: 'No current service',
+  },
+  {
+    name: 'Olivia',
+    age: 28,
+    mood: 'Excited',
+    category: 'New Resident',
+    problem: 'New resident doesn\'t know options',
+    intro: "I just moved here — what plans are available in my area?",
+    focus: 'Education',
+    existingProvider: 'No current service',
+  },
+  {
+    name: 'Ben',
+    age: 38,
+    mood: 'Practical',
+    category: 'Small Business Owner',
+    problem: 'Small business mixed needs',
+    intro: "I run a home business and need uptime and a decent upload speed.",
+    focus: 'Uptime',
+    existingProvider: 'Comcast',
+  },
+  {
+    name: 'Ravi',
+    age: 26,
+    mood: 'Determined',
+    category: 'Student',
+    problem: 'Needs reliable upload for projects',
+    intro: "I upload large project files and join remote labs.",
+    focus: 'Upload and reliability',
+    existingProvider: 'Competitor',
+  },
+  {
+    name: 'Karen',
+    age: 50,
+    mood: 'Community-minded',
+    category: 'Community Organizer',
+    problem: 'Looking for event partnerships',
+    intro: "We organize neighborhood events and wonder about sponsorships.",
+    focus: 'Community engagement',
+    existingProvider: 'None',
+  },
+  {
+    name: 'Liam',
+    age: 35,
+    mood: 'Overwhelmed',
+    category: 'Mover',
+    problem: 'Mover needing transfer',
+    intro: "I'm moving next week and need my service transferred quickly.",
+    focus: 'Transfer speed',
+    existingProvider: 'Comcast',
+  },
+  {
+    name: 'Monica',
+    age: 55,
+    mood: 'Cautious',
+    category: 'Senior Tech Skeptic',
+    problem: 'Tech setup concerns',
+    intro: "I'm not sure I can manage yet another device and service.",
+    focus: 'Assistance',
+    existingProvider: 'Competitor',
+  },
+  {
+    name: 'Jordan',
+    age: 32,
+    mood: 'Anxious',
+    category: 'Remote Worker',
+    problem: 'Latency affects video calls',
+    intro: "My video calls keep freezing and I need better reliability.",
+    focus: 'Reliability',
+    existingProvider: 'Comcast',
+  },
+  {
+    name: 'Priya',
+    age: 45,
+    mood: 'Organized',
+    category: 'Household Manager',
+    problem: 'Many smart home devices need stable service',
+    intro: "Our home has lots of connected devices and we need a plan that can handle them.",
+    focus: 'Capacity',
+    existingProvider: 'Competitor',
+  },
+  {
+    name: 'Noah',
+    age: 19,
+    mood: 'Excited',
+    category: 'Streamer',
+    problem: 'Needs reliable streaming for content creation',
+    intro: "I'm starting to stream regularly and need a stable upload.",
+    focus: 'Upload speed',
+    existingProvider: 'No current service',
+  },
+  {
+    name: 'Avery',
+    age: 40,
+    mood: 'Inquisitive',
+    category: 'Budget Shopper',
+    problem: 'Wants best bundle with savings',
+    intro: "I'm shopping around for the best bundle that fits my family.",
+    focus: 'Value',
+    existingProvider: 'Competitor',
+  },
+]
+
+const budgetLevels = [
+  { label: 'High', note: 'Willing to pay more for premium service.' },
+  { label: 'Medium', note: 'Looking for a balanced price and performance.' },
+  { label: 'Low', note: 'Needs affordable options and value bundles.' },
+]
+
+const streamingHabits = [
+  'Mostly streaming HD video in the evenings.',
+  'Uses video conferencing daily and occasional streaming.',
+  'Goes live and uploads large videos frequently.',
+  'Streams sports and movies on multiple devices.',
+  'Manages smart home devices and remote learning streaming.',
+]
+
+const providerOptions = [
+  'Comcast',
+  'Another major provider',
+  'Local fiber competitor',
+  'No current service',
+]
+
+function randomChoice(arr) {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+function generateResident() {
+  const base = randomChoice(basePersonas)
+  const householdSize = randomInt(1, 6)
+  const deviceCount = randomInt(2, Math.max(3, householdSize * 2))
+  const budget = randomChoice(budgetLevels)
+  const usage = randomChoice(streamingHabits)
+  const existingProvider = base.existingProvider || randomChoice(providerOptions)
+
+  return {
+    ...base,
+    householdSize,
+    deviceCount,
+    usagePattern: usage,
+    budgetConcern: budget.label,
+    budgetNote: budget.note,
+    existingProvider,
+    location: 'Suburban community',
+    personaNote: `${base.category} who cares most about ${base.focus.toLowerCase()}.`,
+    challengeDetail: `${base.problem} They are especially worried about ${base.focus.toLowerCase()}.`,
+    conversationStarter: base.intro,
+  }
+}
+
+module.exports = { generateResident }
