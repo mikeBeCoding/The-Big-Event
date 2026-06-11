@@ -2,8 +2,10 @@ const express = require('express')
 const cors = require('cors')
 const fs = require('fs')
 const path = require('path')
-const Anthropic = require('@anthropic-ai/sdk')
-require('dotenv').config()
+// Load env from server/.env regardless of the process's cwd. `npm run dev`
+// launches this with cwd at the repo root, where a bare config() would never
+// find server/.env — silently dropping ANTHROPIC_API_KEY and PORT.
+require('dotenv').config({ path: path.join(__dirname, '.env') })
 
 const app = express()
 app.use(cors())
@@ -14,7 +16,29 @@ const PORT = process.env.PORT || 4000
 // Modern Messages API client. Only created when a key is present; otherwise the
 // keyword-based fallbacks below keep the game playable with no API key.
 const MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-4-8'
-const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null
+
+// Load the SDK lazily on first use rather than at startup. Requiring
+// @anthropic-ai/sdk at the top level wedges the process before app.listen(),
+// so we defer it: no API key -> the keyword fallbacks below run and the SDK is
+// never touched. Memoized so we only pay the import once.
+let _anthropic
+let _anthropicResolved = false
+function getAnthropic() {
+  if (_anthropicResolved) return _anthropic
+  _anthropicResolved = true
+  if (!process.env.ANTHROPIC_API_KEY) {
+    _anthropic = null
+    return _anthropic
+  }
+  try {
+    const Anthropic = require('@anthropic-ai/sdk')
+    _anthropic = new Anthropic()
+  } catch (err) {
+    console.error('Failed to load @anthropic-ai/sdk; using fallbacks', err)
+    _anthropic = null
+  }
+  return _anthropic
+}
 
 // Convert the game's {role: 'player'|'resident'} transcript into Messages API
 // turns. The resident is the assistant we're generating, the player is the user.
@@ -77,6 +101,7 @@ app.post('/api/chat', async (req, res) => {
 
   const messages = toMessages(conversation)
 
+  const anthropic = getAnthropic()
   if (anthropic && messages.length) {
     try {
       const system = `You are ${resident.name}, a resident visiting a Comcast community event booth. Stay fully in character using this persona:
@@ -172,6 +197,7 @@ app.post('/api/evaluate', async (req, res) => {
   updateEventResident(sessionId, resident)
   addEvaluation(sessionId, { conversation, resident, evaluatedAt: new Date().toISOString() })
 
+  const anthropic = getAnthropic()
   if (anthropic) {
     try {
       const response = await anthropic.messages.create({

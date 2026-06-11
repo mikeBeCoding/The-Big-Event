@@ -1,6 +1,17 @@
 {
+  "name": "the-big-event",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,magenta \"npm run dev:server\" \"npm run dev:web\"",
+    "dev:server": "node server/index.js",
+    "dev:web": "npm --prefix \"The Big Event\" run dev"
+  },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
     "tailwindcss": "^4.3.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
   }
 }
