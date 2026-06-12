@@ -267,4 +267,18 @@ app.get('/api/session/:sessionId', (req, res) => {
   res.json({ session, history })
 })
 
+// Serve the built frontend (Vite output) so the whole app runs from one
+// process in production. Falls back to the SPA's index.html for client-side
+// routes. Skipped silently in dev when no build exists.
+const distDir = path.join(__dirname, '..', 'The Big Event', 'dist')
+if (fs.existsSync(distDir)) {
+  app.use(express.static(distDir))
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next()
+    res.sendFile(path.join(distDir, 'index.html'))
+  })
+} else {
+  console.warn(`No frontend build found at ${distDir}. Run "npm run build" to serve the UI.`)
+}
+
 app.listen(PORT, () => console.log(`Server listening on ${PORT}`))

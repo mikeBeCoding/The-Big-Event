@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "concurrently -n server,web -c blue,magenta \"npm run dev:server\" \"npm run dev:web\"",
     "dev:server": "node server/index.js",
-    "dev:web": "npm --prefix \"The Big Event\" run dev"
+    "dev:web": "npm --prefix \"The Big Event\" run dev",
+    "install:all": "npm install && npm install --prefix \"The Big Event\" && npm install --prefix server",
+    "build": "npm run build --prefix \"The Big Event\"",
+    "start": "node server/index.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
