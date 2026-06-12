@@ -7,7 +7,7 @@
     "dev:server": "node server/index.js",
     "dev:web": "npm --prefix \"The Big Event\" run dev",
     "install:all": "npm install --include=dev && npm install --include=dev --prefix \"The Big Event\" && npm install --prefix server",
-    "build": "npm run build --prefix \"The Big Event\"",
+    "build": "npm install --include=dev --prefix \"The Big Event\" && npm install --prefix server && npm run build --prefix \"The Big Event\"",
     "start": "node server/index.js"
   },
   "dependencies": {
