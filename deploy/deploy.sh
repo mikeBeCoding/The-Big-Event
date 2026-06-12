@@ -6,9 +6,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+# --include=dev forces devDependencies (tsc, vite, plugins) to install even
+# when NODE_ENV=production is set in the shell — otherwise the frontend build
+# fails with "tsc: command not found".
 echo "==> Installing dependencies"
-npm install
-npm install --prefix "The Big Event"
+npm install --include=dev
+npm install --include=dev --prefix "The Big Event"
 npm install --prefix server
 
 echo "==> Checking server/.env"

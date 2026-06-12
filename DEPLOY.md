@@ -85,6 +85,18 @@ git pull
 | Status | `pm2 status` |
 | Reload nginx | `sudo systemctl reload nginx` |
 
+## Troubleshooting
+
+**`sh: tsc: command not found` / `ERROR: Failed to build`** — the build tools
+(`tsc`, `vite`) are devDependencies, and they were skipped at install time
+(usually because `NODE_ENV=production` is set in the shell). `deploy.sh` now
+installs with `--include=dev`, so re-run it. To fix by hand:
+
+```bash
+npm install --include=dev --prefix "The Big Event"
+npm run build --prefix "The Big Event"
+```
+
 ## Notes / limitations
 
 - **Data store:** sessions are saved to `server/data/sessions.json` (gitignored).
