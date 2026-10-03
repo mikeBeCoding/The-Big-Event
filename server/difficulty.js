@@ -14,7 +14,7 @@ const STARTING_STAGE = { Easy: 'Engaged', Medium: 'Curious', Hard: 'Closed' }
 const DIFFICULTY_MULTIPLIER = { Easy: 1, Medium: 1.25, Hard: 1.5 }
 
 const REGIONS = [
-  { name: 'San Francisco Bay Area', cities: ['San Jose', 'Oakland', 'Fremont', 'Sunnyvale', 'Hayward', 'Walnut Creek'] },
+  { name: 'San Francisco Bay Area', cities: ['Santa Rosa', 'Oakland', 'Napa', 'Petaluma', 'Hayward', 'Walnut Creek', 'Vallejo', 'Martinez', 'Hercules'] },
   { name: 'Sacramento area', cities: ['Sacramento', 'Elk Grove', 'Roseville', 'Folsom', 'Citrus Heights'] },
 ]
 
@@ -38,10 +38,10 @@ const RATE_CARD = {
     { plan: '2 Gig', promo: 95, standard: 130 },
   ],
   mobile: [
-    { plan: 'Unlimited (per line)', promo: 30, standard: 40 },
-    { plan: 'Unlimited Plus (per line)', promo: 40, standard: 50 },
+    { plan: 'Unlimited (per line)', promo: 0, standard: 30 },
+    { plan: 'Unlimited Plus (per line)', promo: 15, standard: 45 },
   ],
-  notes: 'Simulated training prices. Mobile requires Comcast internet.',
+  notes: 'Simulated training prices (promo prices change monthly). Mobile requires Comcast internet.',
 }
 
 function randomChoice(arr) {
