@@ -46,6 +46,20 @@ const RATE_CARD = {
   notes: 'Simulated training prices. Internet has a 5-year price guarantee; the mobile promo is only available with it and lasts 12 months. Mobile requires Comcast internet.',
 }
 
+// Real Comcast offerings that aren't on the rate card. Reps who bring these
+// up are adding value for the resident and should never be marked down for it.
+const ADDITIONAL_PRODUCTS = [
+  { product: 'Xfinity Shield', plan: 'Free', price: 0 },
+  { product: 'Xfinity Shield', plan: 'Select', price: 15 },
+  { product: 'Internet Essentials', plan: '75 Mbps', price: 14.95 },
+  { product: 'Internet Essentials', plan: 'Plus (100 Mbps)', price: 29.95 },
+]
+
+function additionalProductsGuide() {
+  const list = ADDITIONAL_PRODUCTS.map((p) => `${p.product} ${p.plan}: $${p.price}/mo`).join('; ')
+  return `OTHER COMCAST PRODUCTS (not on the rate card, but real offerings): ${list}. Internet Essentials is Comcast's low-cost internet program for qualifying households. A rep who offers any of these is giving accurate information and bringing extra value; never treat it as wrong or off-script.`
+}
+
 function randomChoice(arr) {
   return arr[Math.floor(Math.random() * arr.length)]
 }
@@ -188,7 +202,8 @@ function pricingGuide() {
   return `COMCAST PRICING (for judging the rep's answers; never recite this yourself):
 Internet comes with a ${years}-year price guarantee: a fixed monthly price for ${years} years, not a short-term promotion. Internet — ${fmt(RATE_CARD.internet, `${years} years`)}.
 Mobile promo pricing is ONLY offered to customers who get internet with the ${years}-year price guarantee, and the mobile promo itself only lasts ${months} months; it is not locked in for ${years} years. Mobile — ${fmt(RATE_CARD.mobile, `${months} months`)}.
-If you ask about long-term internet cost, accept an answer that explains the ${years}-year price guarantee and its fixed price. If you ask about long-term mobile cost, only accept an answer that gives the price after the ${months}-month promotion ends; a rep who claims the mobile price is locked in for ${years} years is wrong, and so is a rep who says you can get the mobile promo without the ${years}-year internet guarantee. The rep's exact numbers may differ slightly from these, since offers are updated over time.`
+If you ask about long-term internet cost, accept an answer that explains the ${years}-year price guarantee and its fixed price. If you ask about long-term mobile cost, only accept an answer that gives the price after the ${months}-month promotion ends; a rep who claims the mobile price is locked in for ${years} years is wrong, and so is a rep who says you can get the mobile promo without the ${years}-year internet guarantee. The rep's exact numbers may differ slightly from these, since offers are updated over time.
+${additionalProductsGuide()}`
 }
 
 function residentSystemPrompt(resident, stage) {
@@ -245,6 +260,8 @@ module.exports = {
   STAGES,
   DIFFICULTY_MULTIPLIER,
   RATE_CARD,
+  ADDITIONAL_PRODUCTS,
+  additionalProductsGuide,
   applyDifficulty,
   residentSystemPrompt,
   startingStage,

@@ -106,16 +106,19 @@ export default function CoachingPanel({ result, onNextResident }: CoachingPanelP
             </div>
           )}
 
-          {/* Skill breakdown */}
+          {/* Skill breakdown, collapsed by default */}
           {skillRows.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-white">Skill Breakdown</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+            <details className="group">
+              <summary className="flex items-center gap-2 cursor-pointer list-none text-lg font-semibold text-white hover:text-blue-200 [&::-webkit-details-marker]:hidden">
+                <span className="text-sm text-gray-400 transition-transform group-open:rotate-90">▶</span>
+                Skill Breakdown
+              </summary>
+              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
                 {skillRows.map((k) => (
                   <SkillBar key={k} label={SKILL_LABELS[k]} score={skills?.[k] ?? null} />
                 ))}
               </div>
-            </div>
+            </details>
           )}
 
           {/* Feedback */}
@@ -188,13 +191,13 @@ function ScoreCard({
   isMain?: boolean
 }) {
   const getScoreColor = (s: number) => {
-    if (s >= 85) return 'text-green-400'
+    if (s >= 80) return 'text-green-400'
     if (s >= 70) return 'text-yellow-400'
     return 'text-red-400'
   }
 
   const getScoreBg = (s: number) => {
-    if (s >= 85) return 'bg-green-900/30 border-green-700'
+    if (s >= 80) return 'bg-green-900/30 border-green-700'
     if (s >= 70) return 'bg-yellow-900/30 border-yellow-700'
     return 'bg-red-900/30 border-red-700'
   }
@@ -216,7 +219,7 @@ function ScoreCard({
       <div className="mt-2 w-full bg-gray-700 rounded-full h-2 overflow-hidden">
         <div
           className={`h-full transition-all ${
-            score >= 85
+            score >= 80
               ? 'bg-green-500'
               : score >= 70
               ? 'bg-yellow-500'
@@ -231,7 +234,7 @@ function ScoreCard({
 
 function SkillBar({ label, score }: { label: string; score: number | null }) {
   const color =
-    score === null ? 'bg-gray-600' : score >= 85 ? 'bg-green-500' : score >= 70 ? 'bg-yellow-500' : 'bg-red-500'
+    score === null ? 'bg-gray-600' : score >= 80 ? 'bg-green-500' : score >= 70 ? 'bg-yellow-500' : 'bg-red-500'
   return (
     <div className="text-xs">
       <div className="flex justify-between text-gray-300 mb-1">

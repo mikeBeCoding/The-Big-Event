@@ -82,6 +82,7 @@ const {
   STAGES,
   DIFFICULTY_MULTIPLIER,
   RATE_CARD,
+  additionalProductsGuide,
   residentSystemPrompt,
   currentStage,
   clampStage,
@@ -227,11 +228,15 @@ Score the rep 0-100 on each metric (customerSatisfaction, discoveryScore, salesE
 - activeListening: reflecting back and building on what the resident said
 - needsIdentification: correctly naming the resident's actual needs
 - objectionHandling: addressing skepticism and concerns honestly
-- pricingKnowledge: accurate use of the rate card
+- pricingKnowledge: accurate use of the rate card. Comcast also offers products that aren't on the rate card (listed below); accurately offering them counts as accurate pricing, never as an error
 - postPromoAwareness: giving the post-promotion price when the resident asked about long-term cost (or proactively); relying only on promo pricing scores low
 - valuePositioning: connecting price to value for this resident's lifestyle
 - solutionFit: recommending an appropriate solution only after understanding needs
 - rapport: warmth and trust built
+
+Offering additional Comcast products beyond the rate card (such as Xfinity Shield or Internet Essentials) brings more value to the resident. Never penalize the rep for it in any score; credit it under valuePositioning and solutionFit when it fits the resident's needs.
+
+This simulation is for beginners, so score encouragingly. A rep who moves the resident to Receptive has done the core job well and should land around 75-80 or higher overall. Reserve scores below 50 for real mistakes: wrong prices, misleading claims, dodging questions, or pushy selling. The rate card is simulated and offers change over time, so prices that are close to it count as accurate; only mark down pricingKnowledge for clearly wrong figures or wrong terms (such as claiming the mobile promo lasts 5 years).
 
 Calibrate for difficulty. Easy residents share freely, so high discovery scores require going beyond what they volunteered. Hard residents start guarded; moving them toward Receptive through good discovery is a strong achievement and should be credited, while pitching early to a guarded resident should be penalized. Give a few concise feedback bullets on what went well and a few targeted coaching tips for next time.`
 
@@ -312,7 +317,7 @@ app.post('/api/evaluate', async (req, res) => {
         messages: [
           {
             role: 'user',
-            content: `Resident persona (difficulty: ${resident.difficulty || 'Medium'}):\n${JSON.stringify(resident, null, 2)}\n\nRate card:\n${JSON.stringify(RATE_CARD)}\n\nResident openness journey: ${journey.join(' → ')}\n\nConversation transcript:\n${transcriptOf(conversation)}`,
+            content: `Resident persona (difficulty: ${resident.difficulty || 'Medium'}):\n${JSON.stringify(resident, null, 2)}\n\nRate card:\n${JSON.stringify(RATE_CARD)}\n\n${additionalProductsGuide()}\n\nResident openness journey: ${journey.join(' → ')}\n\nConversation transcript:\n${transcriptOf(conversation)}`,
           },
         ],
         output_config: {
