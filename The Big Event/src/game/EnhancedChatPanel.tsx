@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import { chatWithResident } from './api'
-import type { Resident, Message } from './types'
+import type { Resident, Message, RateCard, RatePlan } from './types'
 
 interface EnhancedChatPanelProps {
   resident: Resident
   sessionId: string
+  rateCard: RateCard | null
   onEndConversation: (conversation: Message[]) => void
   isConversing: boolean
 }
@@ -12,9 +13,11 @@ interface EnhancedChatPanelProps {
 export default function EnhancedChatPanel({
   resident,
   sessionId,
+  rateCard,
   onEndConversation,
   isConversing,
 }: EnhancedChatPanelProps) {
+  const [showRates, setShowRates] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'resident',
@@ -40,7 +43,7 @@ export default function EnhancedChatPanel({
         response.reply || response.error || 'Sorry, I did not understand that.'
       setMessages((current) => [
         ...current,
-        { role: 'resident', text: replyText },
+        { role: 'resident', text: replyText, stage: response.stage },
       ])
     } catch (error) {
       console.error('Chat request failed', error)
@@ -112,8 +115,52 @@ export default function EnhancedChatPanel({
         <div className="mt-2 sm:mt-3 text-[11px] sm:text-xs text-gray-400 text-center">
           💡 Ask discovery questions to uncover the resident's needs before
           recommending solutions
+          {rateCard && (
+            <>
+              {' · '}
+              <button
+                type="button"
+                onClick={() => setShowRates((v) => !v)}
+                className="underline hover:text-gray-200"
+              >
+                {showRates ? 'Hide' : 'Show'} rate card
+              </button>
+            </>
+          )}
         </div>
+
+        {/* Rate card: promo vs. post-promotion pricing */}
+        {rateCard && showRates && (
+          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] sm:text-xs text-gray-300">
+            <RateTable title="Internet" plans={rateCard.internet} months={rateCard.promoMonths} />
+            <RateTable title="Mobile" plans={rateCard.mobile} months={rateCard.promoMonths} />
+            <p className="sm:col-span-2 text-center text-gray-500">{rateCard.notes}</p>
+          </div>
+        )}
       </div>
     </div>
+  )
+}
+
+function RateTable({ title, plans, months }: { title: string; plans: RatePlan[]; months: number }) {
+  return (
+    <table className="w-full bg-gray-950/50 rounded border border-gray-700">
+      <thead>
+        <tr className="text-gray-400">
+          <th className="text-left px-2 py-1">{title}</th>
+          <th className="text-right px-2 py-1">First {months} mo</th>
+          <th className="text-right px-2 py-1">After promo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {plans.map((p) => (
+          <tr key={p.plan}>
+            <td className="px-2 py-0.5">{p.plan}</td>
+            <td className="text-right px-2 py-0.5">${p.promo}/mo</td>
+            <td className="text-right px-2 py-0.5 font-semibold text-white">${p.standard}/mo</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   )
 }

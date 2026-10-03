@@ -1,3 +1,5 @@
+const { applyDifficulty } = require('./difficulty')
+
 const basePersonas = [
   {
     name: 'Sarah',
@@ -255,13 +257,6 @@ const streamingHabits = [
   'Manages smart home devices and remote learning streaming.',
 ]
 
-const providerOptions = [
-  'Comcast',
-  'Another major provider',
-  'Local fiber competitor',
-  'No current service',
-]
-
 function randomChoice(arr) {
   return arr[Math.floor(Math.random() * arr.length)]
 }
@@ -276,7 +271,7 @@ function generateResident() {
   const deviceCount = randomInt(2, Math.max(3, householdSize * 2))
   const budget = randomChoice(budgetLevels)
   const usage = randomChoice(streamingHabits)
-  const existingProvider = base.existingProvider || randomChoice(providerOptions)
+  const tier = applyDifficulty(base, householdSize)
 
   return {
     ...base,
@@ -285,8 +280,8 @@ function generateResident() {
     usagePattern: usage,
     budgetConcern: budget.label,
     budgetNote: budget.note,
-    existingProvider,
-    location: 'Suburban community',
+    ...tier,
+    location: `${tier.city}, ${tier.region}`,
     personaNote: `${base.category} who cares most about ${base.focus.toLowerCase()}.`,
     challengeDetail: `${base.problem} They are especially worried about ${base.focus.toLowerCase()}.`,
     conversationStarter: base.intro,

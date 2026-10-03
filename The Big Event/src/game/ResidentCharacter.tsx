@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { Resident } from './types'
+import { DIFFICULTY_EMOJI, type Resident } from './types'
 
 interface ResidentCharacterProps {
   resident: Resident | null
@@ -178,7 +178,9 @@ export default function ResidentCharacter({
 
   if (!resident) return null
 
-  const face = MOOD_EMOJI[resident.mood] ?? '👤'
+  // The bubble shows difficulty; mood still drives the facial expression.
+  const difficultyEmoji = resident.difficulty ? DIFFICULTY_EMOJI[resident.difficulty] : undefined
+  const face = difficultyEmoji ?? MOOD_EMOJI[resident.mood] ?? '👤'
   const expression = MOOD_EXPRESSION[resident.mood] ?? 'neutral'
   const faceCfg = FACES[expression]
 
@@ -238,9 +240,11 @@ export default function ResidentCharacter({
               <Mouth shape={faceCfg.mouth} />
             </div>
 
-            {/* Thought bubble showing the mood */}
+            {/* Thought bubble showing the difficulty */}
             <div className="absolute -top-3 right-0 translate-x-1/3">
-              <div className="bg-white/95 backdrop-blur rounded-2xl px-2.5 py-1.5 shadow-lg border border-gray-200 text-3xl leading-none select-none">
+              <div
+                title={resident.difficulty ? `${resident.difficulty} resident` : resident.mood}
+                className="bg-white/95 backdrop-blur rounded-2xl px-2.5 py-1.5 shadow-lg border border-gray-200 text-3xl leading-none select-none">
                 {face}
               </div>
               <div className="absolute -bottom-1.5 left-3 w-2.5 h-2.5 bg-white/95 border border-gray-200 rounded-full" />
@@ -275,6 +279,11 @@ export default function ResidentCharacter({
             <div className="text-xs font-medium text-gray-500">
               {resident.category}
             </div>
+            {resident.difficulty && (
+              <div className="mt-1 text-xs font-semibold text-gray-700">
+                {DIFFICULTY_EMOJI[resident.difficulty]} {resident.difficulty}
+              </div>
+            )}
           </div>
         </div>
       </div>

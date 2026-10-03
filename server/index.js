@@ -78,6 +78,15 @@ const {
   getSessionHistory,
 } = require('./db')
 const { generateResident } = require('./persona-generator')
+const {
+  STAGES,
+  DIFFICULTY_MULTIPLIER,
+  RATE_CARD,
+  residentSystemPrompt,
+  currentStage,
+  clampStage,
+  stageJourney,
+} = require('./difficulty')
 
 function sample(arr) {
   return arr[Math.floor(Math.random() * arr.length)]
@@ -87,8 +96,67 @@ app.get('/api/resident', (req, res) => {
   const resident = generateResident()
   const sessionId = `session-${Date.now()}-${Math.floor(Math.random() * 10000)}`
   createEvent(sessionId, resident)
-  res.json({ resident, sessionId })
+  res.json({ resident, sessionId, rateCard: RATE_CARD })
 })
+
+// Structured output for resident replies: what they say plus their updated
+// openness stage, which the frontend echoes back on the next turn.
+const CHAT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    reply: { type: 'string' },
+    stage: { type: 'string', enum: STAGES },
+  },
+  required: ['reply', 'stage'],
+}
+
+const OPEN_QUESTION = /^(what|how|why|tell me|walk me|describe|which|when)\b|what do you|how do you|how many/i
+const FILLER = /^(what else|anything else|and\??|ok(ay)?|cool|got it)\W*$/i
+
+// Keyword-based resident used when no API key is configured. Approximates the
+// difficulty rules: open questions build openness, filler and pushing don't.
+function fallbackChat(resident, previousStage, lastUser) {
+  const text = lastUser ? lastUser.text.trim() : ''
+  const idx = STAGES.indexOf(previousStage)
+  let next = idx
+  if (FILLER.test(text)) next = idx
+  else if (OPEN_QUESTION.test(text)) next = idx + 1
+  else if (/sign up|switch today|buy|deal today/i.test(text)) next = idx - 1
+  const stage = STAGES[Math.max(0, Math.min(STAGES.length - 1, next))]
+  const guarded = stage === 'Closed'
+  const difficulty = resident.difficulty || 'Medium'
+
+  let reply
+  if (FILLER.test(text)) {
+    reply = guarded ? "Not really." : "I'm not sure what else to tell you."
+  } else if (/promo|promotion|\$\d+/i.test(text) && !/after|standard|regular|long[- ]term/i.test(text) && difficulty !== 'Easy') {
+    reply = 'Okay, but what happens when that promotion ends? What will I actually be paying?'
+  } else if (/pay|paying|bill|cost/i.test(text) && OPEN_QUESTION.test(text)) {
+    reply = stage === 'Closed' || stage === 'Curious'
+      ? "I'd rather not get into numbers yet."
+      : `Right now it's around $${resident.currentMonthlyCost} a month all in.`
+  } else if (/provider|who do you|currently have|use now/i.test(text)) {
+    reply = guarded ? 'I already have service, thanks.' : `I've got ${resident.existingProvider.replace(' · ', ' and ').toLowerCase()}.`
+  } else if (/like|love|enjoy/i.test(text) && OPEN_QUESTION.test(text)) {
+    reply = "Honestly, it's pretty reliable. I just don't love what I'm paying."
+  } else if (/how many|people|household|devices/i.test(text)) {
+    reply = guarded
+      ? 'A few of us.'
+      : `There are ${resident.householdSize} of us with about ${resident.deviceCount} devices.`
+  } else if (/transfer|move|address/i.test(text)) {
+    reply = 'Oh good — what address are you moving to?'
+  } else if (/slow|lag|drop|disconnect/i.test(text)) {
+    reply = guarded ? "It's fine most of the time." : 'Yes, it drops during peak times and when I stream.'
+  } else if (/work|zoom|meetings|remote/i.test(text)) {
+    reply = 'I really need this to be stable for my meetings.'
+  } else if (guarded) {
+    reply = difficulty === 'Hard' ? "I'm happy with what I have. Why would I switch?" : "I'm just looking around."
+  } else {
+    reply = `My main issue is: ${resident.problem}`
+  }
+  return { reply, stage }
+}
 
 app.post('/api/chat', async (req, res) => {
   const { conversation, resident, sessionId } = req.body || {}
@@ -100,58 +168,72 @@ app.post('/api/chat', async (req, res) => {
   updateEventResident(sessionId, resident)
 
   const messages = toMessages(conversation)
+  const previousStage = currentStage(resident, conversation)
+  const lastUser = conversation.slice().reverse().find((c) => c.role === 'player')
 
   const anthropic = getAnthropic()
   if (anthropic && messages.length) {
     try {
-      const system = `You are ${resident.name}, a resident visiting a Comcast community event booth. Stay fully in character using this persona:
-
-${JSON.stringify(resident, null, 2)}
-
-You are the CUSTOMER, not the sales rep. Respond to what the rep says and share your needs, concerns, and reactions when asked — do not ask the rep's discovery questions for them. Reply in first person, concise (1-3 sentences), and natural for your mood. Respond only with what you say out loud — no narration, stage directions, or meta-commentary. Never break character or mention being an AI.`
-
       const response = await anthropic.messages.create({
         model: MODEL,
         max_tokens: 400,
         thinking: { type: 'disabled' },
-        system,
+        system: residentSystemPrompt(resident, previousStage),
         messages,
+        output_config: {
+          format: { type: 'json_schema', schema: CHAT_SCHEMA },
+        },
       })
 
-      const reply = textOf(response)
-      const playerMessage = conversation.slice().reverse().find((c) => c.role === 'player')
-      if (playerMessage) {
-        addMessage(sessionId, 'player', playerMessage.text)
+      const parsed = JSON.parse(textOf(response))
+      const stage = clampStage(previousStage, parsed.stage)
+      if (lastUser) {
+        addMessage(sessionId, 'player', lastUser.text)
       }
-      addMessage(sessionId, 'resident', reply)
-      return res.json({ reply })
+      addMessage(sessionId, 'resident', parsed.reply)
+      return res.json({ reply: parsed.reply, stage })
     } catch (err) {
       console.error('Anthropic chat call failed', err)
     }
   }
 
-  const lastUser = Array.isArray(conversation)
-    ? conversation.slice().reverse().find((c) => c.role === 'player')
-    : null
-
-  const fallbackReply = lastUser && /transfer|move|address/i.test(lastUser.text)
-    ? 'Oh good — what address are you moving to?'
-    : lastUser && /price|cost|promo|discount/i.test(lastUser.text)
-    ? 'Are there bundle options or discounts for my situation?'
-    : lastUser && /slow|lag|drop|disconnect/i.test(lastUser.text)
-    ? 'Yes, it drops during peak times and when I stream.'
-    : lastUser && /work|zoom|meetings|remote/i.test(lastUser.text)
-    ? 'I really need this to be stable for my meetings.'
-    : lastUser && /kids|devices|streaming/i.test(lastUser.text)
-    ? 'We have so many devices and the kids stream a lot, so it really matters.'
-    : `My main issue is: ${resident.problem}`
+  const { reply: fallbackReply, stage } = fallbackChat(resident, previousStage, lastUser)
 
   if (lastUser) {
     addMessage(sessionId, 'player', lastUser.text)
   }
   addMessage(sessionId, 'resident', fallbackReply)
-  res.json({ reply: fallbackReply })
+  res.json({ reply: fallbackReply, stage })
 })
+
+const SKILL_KEYS = [
+  'openEndedQuestions',
+  'discoveryDepth',
+  'activeListening',
+  'needsIdentification',
+  'objectionHandling',
+  'pricingKnowledge',
+  'postPromoAwareness',
+  'valuePositioning',
+  'solutionFit',
+  'rapport',
+]
+
+const EVALUATOR_SYSTEM = `You are an expert sales coach evaluating how a Comcast rep handled a community-event conversation with a resident. The game rewards consultative discovery, not aggressive selling.
+
+Score the rep 0-100 on each metric (customerSatisfaction, discoveryScore, salesEffectiveness, and an overall eventSuccessScore). Also score each skill 0-100, or null if it genuinely never came up:
+- openEndedQuestions: quality of open-ended questions (not count; "what else?" filler earns nothing)
+- discoveryDepth: how much of the resident's real situation was uncovered (providers, cost, household, devices, usage, pain points, motivations)
+- activeListening: reflecting back and building on what the resident said
+- needsIdentification: correctly naming the resident's actual needs
+- objectionHandling: addressing skepticism and concerns honestly
+- pricingKnowledge: accurate use of the rate card
+- postPromoAwareness: giving the post-promotion price when the resident asked about long-term cost (or proactively); relying only on promo pricing scores low
+- valuePositioning: connecting price to value for this resident's lifestyle
+- solutionFit: recommending an appropriate solution only after understanding needs
+- rapport: warmth and trust built
+
+Calibrate for difficulty. Easy residents share freely, so high discovery scores require going beyond what they volunteered. Hard residents start guarded; moving them toward Receptive through good discovery is a strong achievement and should be credited, while pitching early to a guarded resident should be penalized. Give a few concise feedback bullets on what went well and a few targeted coaching tips for next time.`
 
 // Structured-output schema for the coaching evaluation. Guarantees valid,
 // parseable JSON in the exact shape the frontend's EvaluationResult expects.
@@ -175,10 +257,31 @@ const EVALUATION_SCHEMA = {
         'eventSuccessScore',
       ],
     },
+    skills: {
+      type: 'object',
+      additionalProperties: false,
+      // null = didn't come up in this conversation (e.g. no pricing discussion).
+      properties: Object.fromEntries(SKILL_KEYS.map((k) => [k, { anyOf: [{ type: 'integer' }, { type: 'null' }] }])),
+      required: SKILL_KEYS,
+    },
     feedback: { type: 'array', items: { type: 'string' } },
     coach: { type: 'array', items: { type: 'string' } },
   },
-  required: ['scores', 'feedback', 'coach'],
+  required: ['scores', 'skills', 'feedback', 'coach'],
+}
+
+// Attach difficulty context: the openness journey and difficulty-weighted
+// event points, so a strong Hard conversation is worth more than an Easy one.
+function withDifficulty(result, resident, journey) {
+  const difficulty = resident.difficulty || 'Medium'
+  const multiplier = DIFFICULTY_MULTIPLIER[difficulty] || 1
+  return {
+    ...result,
+    difficulty,
+    journey,
+    multiplier,
+    eventPoints: Math.round(result.scores.eventSuccessScore * multiplier),
+  }
 }
 
 function transcriptOf(conversation) {
@@ -196,6 +299,7 @@ app.post('/api/evaluate', async (req, res) => {
 
   updateEventResident(sessionId, resident)
   addEvaluation(sessionId, { conversation, resident, evaluatedAt: new Date().toISOString() })
+  const journey = stageJourney(resident, conversation)
 
   const anthropic = getAnthropic()
   if (anthropic) {
@@ -204,12 +308,11 @@ app.post('/api/evaluate', async (req, res) => {
         model: MODEL,
         max_tokens: 2000,
         thinking: { type: 'adaptive' },
-        system:
-          'You are an expert sales coach evaluating how a Comcast rep handled a community-event conversation with a resident. Score the rep 0-100 on each metric (customerSatisfaction, discoveryScore, salesEffectiveness, and an overall eventSuccessScore). Give a few concise feedback bullets on what happened and a few targeted coaching tips for next time.',
+        system: EVALUATOR_SYSTEM,
         messages: [
           {
             role: 'user',
-            content: `Resident persona:\n${JSON.stringify(resident, null, 2)}\n\nConversation transcript:\n${transcriptOf(conversation)}`,
+            content: `Resident persona (difficulty: ${resident.difficulty || 'Medium'}):\n${JSON.stringify(resident, null, 2)}\n\nRate card:\n${JSON.stringify(RATE_CARD)}\n\nResident openness journey: ${journey.join(' → ')}\n\nConversation transcript:\n${transcriptOf(conversation)}`,
           },
         ],
         output_config: {
@@ -217,7 +320,7 @@ app.post('/api/evaluate', async (req, res) => {
         },
       })
 
-      const parsed = JSON.parse(textOf(response))
+      const parsed = withDifficulty(JSON.parse(textOf(response)), resident, journey)
       addEvaluation(sessionId, parsed)
       return res.json(parsed)
     } catch (err) {
@@ -225,23 +328,36 @@ app.post('/api/evaluate', async (req, res) => {
     }
   }
 
-  let cs = 70
-  let ds = 60
+  // Keyword fallback. Reaching further along the openness journey counts for
+  // more than question volume, and post-promo pricing earns credit.
+  const userMessages = conversation.filter((c) => c.role === 'player')
+  const openQuestions = userMessages.filter((m) => OPEN_QUESTION.test(m.text.trim()) && !FILLER.test(m.text.trim())).length
+  const stageGain = STAGES.indexOf(journey[journey.length - 1]) - STAGES.indexOf(journey[0])
+  const mentionedPromo = userMessages.some((m) => /promo|promotion/i.test(m.text))
+  const gavePostPromo = userMessages.some((m) => /after (the )?promo|standard|regular price|long[- ]term|\$\d+.*after/i.test(m.text))
+
+  let cs = 65
+  let ds = 50 + Math.min(20, openQuestions * 5) + stageGain * 10
   let se = 50
-  if (conversation && conversation.length) {
-    const userMessages = conversation.filter((c) => c.role === 'player')
-    if (userMessages.some((m) => /how|what|tell me/i.test(m.text))) ds += 10
-    if (userMessages.some((m) => /recommend|plan|package|bundle/i.test(m.text))) se += 10
-    if (userMessages.some((m) => /sorry|understand|thanks|happy to help/i.test(m.text))) cs += 10
-  }
+  if (userMessages.some((m) => /recommend|plan|package|bundle/i.test(m.text))) se += 10
+  if (gavePostPromo) se += 10
+  else if (mentionedPromo && resident.difficulty !== 'Easy') se -= 10
+  if (userMessages.some((m) => /sorry|understand|thanks|happy to help|sounds like|so you/i.test(m.text))) cs += 10
+  cs += stageGain * 5
+  ds = Math.max(0, ds)
+  se = Math.max(0, se)
 
   const eventSuccessScore = Math.round((cs + ds + se) / 3)
-  const evaluationResult = {
+  const evaluationResult = withDifficulty({
     scores: {
       customerSatisfaction: Math.min(100, cs),
       discoveryScore: Math.min(100, ds),
       salesEffectiveness: Math.min(100, se),
-      eventSuccessScore,
+      eventSuccessScore: Math.min(100, eventSuccessScore),
+    },
+    skills: {
+      openEndedQuestions: Math.min(100, 40 + openQuestions * 15),
+      postPromoAwareness: gavePostPromo ? 85 : mentionedPromo ? 30 : null,
     },
     feedback: [
       'Asked some open-ended questions.',
@@ -251,7 +367,7 @@ app.post('/api/evaluate', async (req, res) => {
       'Keep responses customer-focused and ask one open-ended question at a time.',
       'Tie recommended solutions back to the resident’s stated challenges.',
     ],
-  }
+  }, resident, journey)
   addEvaluation(sessionId, evaluationResult)
 
   res.json(evaluationResult)

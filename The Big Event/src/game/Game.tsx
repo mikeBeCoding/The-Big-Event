@@ -5,11 +5,12 @@ import EventTable from './EventTable'
 import ResidentCharacter from './ResidentCharacter'
 import EnhancedChatPanel from './EnhancedChatPanel'
 import CoachingPanel from './CoachingPanel'
-import type { Resident, EvaluationResult, Message } from './types'
+import type { Resident, EvaluationResult, Message, RateCard } from './types'
 
 export default function Game() {
   const [resident, setResident] = useState<Resident | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [rateCard, setRateCard] = useState<RateCard | null>(null)
   const [loading, setLoading] = useState(false)
   const [isWalking, setIsWalking] = useState(false)
   const [isConversing, setIsConversing] = useState(false)
@@ -23,6 +24,7 @@ export default function Game() {
     const json = await fetchResidentApi()
     setResident(json.resident)
     setSessionId(json.sessionId)
+    setRateCard(json.rateCard ?? null)
     setIsWalking(true)
     setIsConversing(false)
     setLoading(false)
@@ -87,6 +89,7 @@ export default function Game() {
         <EnhancedChatPanel
           resident={resident}
           sessionId={sessionId}
+          rateCard={rateCard}
           onEndConversation={handleEndConversation}
           isConversing={isConversing}
         />

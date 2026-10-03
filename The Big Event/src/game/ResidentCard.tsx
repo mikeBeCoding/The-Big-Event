@@ -1,4 +1,4 @@
-import type { Resident } from './types'
+import { DIFFICULTY_EMOJI, type Resident } from './types'
 
 export default function ResidentCard({ resident }: { resident: Resident | null }) {
   if (!resident) return null
@@ -6,7 +6,10 @@ export default function ResidentCard({ resident }: { resident: Resident | null }
     <div className="p-4 border rounded shadow bg-white">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-lg font-bold">{resident.name}, {resident.age}</h3>
+          <h3 className="text-lg font-bold">
+            {resident.difficulty && <span title={`${resident.difficulty} resident`}>{DIFFICULTY_EMOJI[resident.difficulty]} </span>}
+            {resident.name}, {resident.age}
+          </h3>
           <p className="text-sm text-gray-600">{resident.category} · Mood: {resident.mood}</p>
         </div>
         <span className="text-xs uppercase tracking-wide text-slate-500">{resident.budgetConcern || 'Standard'}</span>

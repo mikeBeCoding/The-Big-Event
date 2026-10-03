@@ -22,7 +22,7 @@ export default function ChatUI({ resident, sessionId, onEndConversation }: ChatU
     try {
       const response = await chatWithResident(nextConversation, resident, sessionId)
       const replyText = response.reply || response.error || 'Sorry, I did not understand that.'
-      setMessages((current) => [...current, { role: 'resident', text: replyText }])
+      setMessages((current) => [...current, { role: 'resident', text: replyText, stage: response.stage }])
     } catch (error) {
       console.error('Chat request failed', error)
       setMessages((current) => [...current, { role: 'resident', text: 'I am having trouble answering right now.' }])
