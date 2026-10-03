@@ -44,6 +44,7 @@ export interface RatePlan {
 
 export interface RateCard {
   guaranteeYears: number
+  mobilePromoMonths: number
   internet: RatePlan[]
   mobile: RatePlan[]
   notes: string

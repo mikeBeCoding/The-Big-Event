@@ -129,11 +129,11 @@ export default function EnhancedChatPanel({
           )}
         </div>
 
-        {/* Rate card: promo vs. post-promotion pricing */}
+        {/* Rate card: internet price guarantee and mobile promo vs. post-term pricing */}
         {rateCard && showRates && (
           <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] sm:text-xs text-gray-300">
-            <RateTable title="Internet" plans={rateCard.internet} years={rateCard.guaranteeYears} />
-            <RateTable title="Mobile" plans={rateCard.mobile} years={rateCard.guaranteeYears} />
+            <RateTable title="Internet" plans={rateCard.internet} termLabel={`${rateCard.guaranteeYears}-yr guarantee`} afterLabel={`After ${rateCard.guaranteeYears} yrs`} />
+            <RateTable title="Mobile" plans={rateCard.mobile} termLabel={`First ${rateCard.mobilePromoMonths} mo`} afterLabel="After promo" />
             <p className="sm:col-span-2 text-center text-gray-500">{rateCard.notes}</p>
           </div>
         )}
@@ -142,14 +142,14 @@ export default function EnhancedChatPanel({
   )
 }
 
-function RateTable({ title, plans, years }: { title: string; plans: RatePlan[]; years: number }) {
+function RateTable({ title, plans, termLabel, afterLabel }: { title: string; plans: RatePlan[]; termLabel: string; afterLabel: string }) {
   return (
     <table className="w-full bg-gray-950/50 rounded border border-gray-700">
       <thead>
         <tr className="text-gray-400">
           <th className="text-left px-2 py-1">{title}</th>
-          <th className="text-right px-2 py-1">{years}-yr guarantee</th>
-          <th className="text-right px-2 py-1">After {years} yrs</th>
+          <th className="text-right px-2 py-1">{termLabel}</th>
+          <th className="text-right px-2 py-1">{afterLabel}</th>
         </tr>
       </thead>
       <tbody>
