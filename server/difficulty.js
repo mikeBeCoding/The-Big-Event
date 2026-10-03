@@ -27,10 +27,11 @@ const INTERNET_COMPETITORS = {
 
 const MOBILE_COMPETITORS = ['AT&T', 'Verizon', 'T-Mobile']
 
-// Simulated rate card for training. Promo vs. post-promotion pricing is the
-// point: residents asking about long-term cost expect the "after" number.
+// Simulated rate card for training. Prices are fixed by a multi-year price
+// guarantee: residents asking about long-term cost expect the guarantee length
+// and what they'll pay after it ends.
 const RATE_CARD = {
-  promoMonths: 12,
+  guaranteeYears: 5,
   internet: [
     { plan: '300 Mbps', promo: 40, standard: 85 },
     { plan: '500 Mbps', promo: 55, standard: 95 },
@@ -41,7 +42,7 @@ const RATE_CARD = {
     { plan: 'Unlimited (per line)', promo: 0, standard: 30 },
     { plan: 'Unlimited Plus (per line)', promo: 15, standard: 45 },
   ],
-  notes: 'Simulated training prices (promo prices change monthly). Mobile requires Comcast internet.',
+  notes: 'Simulated training prices with a 5-year price guarantee. Mobile requires Comcast internet.',
 }
 
 function randomChoice(arr) {
@@ -159,7 +160,7 @@ const TIER_BEHAVIOR = {
 - You care about long-term cost. If the rep quotes a promotional price, ask what you'll actually pay after the promotion ends, and don't treat the promo price as a complete answer.
 - Warm up when the rep addresses your concerns honestly and shows clear value for your situation.`,
 
-  Hard: `DIFFICULTY: HARD. You are guarded and not looking to switch. You are NOT rude — you are busy, cautious, and need a reason to open up.
+  Hard: `DIFFICULTY: HARD. You are guarded and not fully ready to switch. You are NOT rude — you are busy, cautious, and need a reason to open up.
 - At first, give short answers and don't volunteer what you pay or who your providers are.
 - Ask challenging questions and question whether switching is worth the hassle.
 - Be skeptical of promotional pricing; focus on the real long-term cost.
@@ -180,10 +181,11 @@ HOW TO UPDATE YOUR STAGE after each rep message:
 - Reward the quality of questions, not the number of them.`
 
 function pricingGuide() {
-  const fmt = (rows) => rows.map((r) => `${r.plan}: $${r.promo}/mo promo, $${r.standard}/mo after`).join('; ')
+  const years = RATE_CARD.guaranteeYears
+  const fmt = (rows) => rows.map((r) => `${r.plan}: $${r.promo}/mo for ${years} years, $${r.standard}/mo after`).join('; ')
   return `COMCAST PRICING (for judging the rep's answers; never recite this yourself):
-Promotions last ${RATE_CARD.promoMonths} months. Internet — ${fmt(RATE_CARD.internet)}. Mobile — ${fmt(RATE_CARD.mobile)}.
-If you ask about cost after the promotion, only accept an answer that gives the post-promotion price.`
+Prices come with a ${years}-year price guarantee: a fixed monthly price for ${years} years, not a short-term promotion. Internet — ${fmt(RATE_CARD.internet)}. Mobile — ${fmt(RATE_CARD.mobile)}.
+If you ask about long-term cost, accept an answer that explains the ${years}-year price guarantee and its fixed price. The rep's exact numbers may differ slightly from these, since offers are updated over time.`
 }
 
 function residentSystemPrompt(resident, stage) {

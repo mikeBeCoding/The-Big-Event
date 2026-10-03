@@ -43,7 +43,7 @@ export interface RatePlan {
 }
 
 export interface RateCard {
-  promoMonths: number
+  guaranteeYears: number
   internet: RatePlan[]
   mobile: RatePlan[]
   notes: string

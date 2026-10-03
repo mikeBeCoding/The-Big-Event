@@ -132,8 +132,8 @@ export default function EnhancedChatPanel({
         {/* Rate card: promo vs. post-promotion pricing */}
         {rateCard && showRates && (
           <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] sm:text-xs text-gray-300">
-            <RateTable title="Internet" plans={rateCard.internet} months={rateCard.promoMonths} />
-            <RateTable title="Mobile" plans={rateCard.mobile} months={rateCard.promoMonths} />
+            <RateTable title="Internet" plans={rateCard.internet} years={rateCard.guaranteeYears} />
+            <RateTable title="Mobile" plans={rateCard.mobile} years={rateCard.guaranteeYears} />
             <p className="sm:col-span-2 text-center text-gray-500">{rateCard.notes}</p>
           </div>
         )}
@@ -142,14 +142,14 @@ export default function EnhancedChatPanel({
   )
 }
 
-function RateTable({ title, plans, months }: { title: string; plans: RatePlan[]; months: number }) {
+function RateTable({ title, plans, years }: { title: string; plans: RatePlan[]; years: number }) {
   return (
     <table className="w-full bg-gray-950/50 rounded border border-gray-700">
       <thead>
         <tr className="text-gray-400">
           <th className="text-left px-2 py-1">{title}</th>
-          <th className="text-right px-2 py-1">First {months} mo</th>
-          <th className="text-right px-2 py-1">After promo</th>
+          <th className="text-right px-2 py-1">{years}-yr guarantee</th>
+          <th className="text-right px-2 py-1">After {years} yrs</th>
         </tr>
       </thead>
       <tbody>
