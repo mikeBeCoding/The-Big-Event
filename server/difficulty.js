@@ -43,7 +43,7 @@ const RATE_CARD = {
     { plan: 'Unlimited (per line)', promo: 0, standard: 30 },
     { plan: 'Unlimited Plus (per line)', promo: 15, standard: 45 },
   ],
-  notes: 'Simulated training prices. Internet has a 5-year price guarantee; mobile is a 12-month promo. Mobile requires Comcast internet.',
+  notes: 'Simulated training prices. Internet has a 5-year price guarantee; the mobile promo is only available with it and lasts 12 months. Mobile requires Comcast internet.',
 }
 
 function randomChoice(arr) {
@@ -187,8 +187,8 @@ function pricingGuide() {
   const fmt = (rows, term) => rows.map((r) => `${r.plan}: $${r.promo}/mo for ${term}, $${r.standard}/mo after`).join('; ')
   return `COMCAST PRICING (for judging the rep's answers; never recite this yourself):
 Internet comes with a ${years}-year price guarantee: a fixed monthly price for ${years} years, not a short-term promotion. Internet — ${fmt(RATE_CARD.internet, `${years} years`)}.
-Mobile is a ${months}-month promotion, not part of the ${years}-year guarantee. Mobile — ${fmt(RATE_CARD.mobile, `${months} months`)}.
-If you ask about long-term internet cost, accept an answer that explains the ${years}-year price guarantee and its fixed price. If you ask about long-term mobile cost, only accept an answer that gives the price after the ${months}-month promotion ends; a rep who claims mobile is covered by the ${years}-year guarantee is wrong. The rep's exact numbers may differ slightly from these, since offers are updated over time.`
+Mobile promo pricing is ONLY offered to customers who get internet with the ${years}-year price guarantee, and the mobile promo itself only lasts ${months} months; it is not locked in for ${years} years. Mobile — ${fmt(RATE_CARD.mobile, `${months} months`)}.
+If you ask about long-term internet cost, accept an answer that explains the ${years}-year price guarantee and its fixed price. If you ask about long-term mobile cost, only accept an answer that gives the price after the ${months}-month promotion ends; a rep who claims the mobile price is locked in for ${years} years is wrong, and so is a rep who says you can get the mobile promo without the ${years}-year internet guarantee. The rep's exact numbers may differ slightly from these, since offers are updated over time.`
 }
 
 function residentSystemPrompt(resident, stage) {
